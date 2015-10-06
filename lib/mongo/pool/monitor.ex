@@ -36,7 +36,9 @@ defmodule Mongo.Pool.Monitor do
                   %{ets: ets, conn: conn, waiting: waiting} = state) do
     version = Connection.wire_version(conn)
     :ets.insert(ets, {:wire_version, version})
-    Enum.each(waiting, &GenServer.reply(&1, version))
+    if waiting do
+      Enum.each(waiting, &GenServer.reply(&1, version))
+    end
     {:noreply, %{state | waiting: nil}}
   end
 end
