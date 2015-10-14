@@ -201,12 +201,12 @@ defmodule Mongo.Connection do
             {:ok, s}
           {:error, reason} ->
             {:stop, reason, s}
-          {:is_secondary, host, port} ->
-            Logger.error "Not a master. Switching to #{host}:#{port}"
+          {:is_secondary, new_host, new_port} ->
             :gen_tcp.close(socket)
+            Logger.error "#{host}:#{port} is not a master. Switching to #{new_host}:#{new_port}"
             opts = opts
-            |> Keyword.put(:hostname, host)
-            |> Keyword.put(:port, port)
+            |> Keyword.put(:hostname, new_host)
+            |> Keyword.put(:port, new_port)
             {:backoff, 1000, %{s | socket: nil, opts: opts}}
           {:no_master, _} ->
             :gen_tcp.close(socket)
