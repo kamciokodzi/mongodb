@@ -6,6 +6,14 @@ Mongodb
 
 ## Features
 
+  * Supports MongoDB versions 2.4, 2.6, 3.0
+  * Connection pooling
+  * Streaming cursors
+  * Performant ObjectID generation
+  * Follows driver specification set by 10gen
+  * Safe (by default) and unsafe writes
+  * Aggregation pipeline
+
 ## Immediate Roadmap
 
   * Add timeouts for all calls
@@ -27,6 +35,29 @@ Mongodb
     - https://www.mongodb.com/blog/post/server-selection-next-generation-mongodb-drivers
     - http://docs.mongodb.org/manual/reference/read-preference
 
+## Data representation
+
+    BSON             	Elixir
+    ----------        	------
+    double              0.0
+    string              "Elixir"
+    document            [{"key", "value"}] | %{"key" => "value"} *
+    binary              %BSON.Binary{binary: <<42, 43>>, subtype: :generic}
+    object id           %BSON.ObjectId{value: <<...>>}
+    boolean             true | false
+    UTC datetime        %BSON.DateTime{utc: ...}
+    null                nil
+    regex               %BSON.Regex{pattern: "..."}
+    JavaScript          %BSON.JavaScript{code: "..."}
+    integer             42
+    symbol              "foo" **
+    min key             :BSON_min
+    max key             :BSON_max
+
+* Since BSON documents are ordered Elixir maps cannot be used to fully represent them. This driver chose to accept both maps and lists of key-value pairs when encoding but will only decode documents to lists. This has the side-effect that it's impossible to discern empty arrays from empty documents. Additionally the driver will accept both atoms and strings for document keys but will only decode to strings.
+
+** BSON symbols can only be decoded.
+
 ## Usage
 
 ### Connection Pools
@@ -46,7 +77,7 @@ Enum.to_list(cursor)
 |> IO.inspect
 ```
 
-### APIs
+### Examples
 ```elixir
 Mongo.find(MongoPool, "test-collection", %{}, limit: 20)
 Mongo.find(MongoPool, "test-collection", %{"field" => %{"$gt" => 0}}, limit: 20, sort: %{"field" => 1})
@@ -58,18 +89,6 @@ Mongo.insert_many(MongoPool, "test-collection", [%{"field" => 10}, %{"field" => 
 Mongo.delete_one(MongoPool, "test-collection", %{"field" => 10})
 
 Mongo.delete_many(MongoPool, "test-collection", %{"field" => 10})
-```
-
-### Run on a single pool connection
-```elixir
-# Gets a pool process (conn) to run queries on
-MongoPool.run(fn (conn) ->
-  # Removes 1 result using the query
-  Mongo.Connection.remove(conn, "test-collection", %{"field" => 1})
-
-  # Removes all results using the query
-  Mongo.Connection.remove(conn, "test-collection", %{"field" => 1, "otherfield" => 1}, multi: true)
-end)
 ```
 
 ## License
