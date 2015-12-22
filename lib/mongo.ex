@@ -196,8 +196,8 @@ defmodule Mongo do
         case Connection.find_one(pid, "$cmd", query, [], opts) do
           %{"ok" => 1.0} = doc ->
             {:ok, doc}
-          %{"ok" => 0.0, "errmsg" => reason, "code" => code} ->
-            {:error, %Mongo.Error{message: "run_command failed: #{reason}", code: code}}
+          %{"ok" => 0.0, "errmsg" => reason} = error ->
+            {:error, %Mongo.Error{message: "run_command failed: #{reason}", code: error["code"]}}
         end
       end)
 
@@ -347,6 +347,13 @@ defmodule Mongo do
   Uses MongoDB update operators to specify the updates. For more information
   please refer to the
   [MongoDB documentation](http://docs.mongodb.org/manual/reference/operator/update/)
+  
+  Example:
+
+      Mongo.update_one(MongoPool,
+        "my_test_collection",
+        %{"filter_field": "filter_value"},
+        %{"$set": %{"modified_field": "new_value"}})
 
   ## Options
 
@@ -524,12 +531,13 @@ defmodule Mongo do
         :ok ->
           {0, :ok}
         {:ok, replace} ->
-          if replace.upserted_id do
-            ids = Map.put(result.upserted_ids, ix, replace.upserted_id)
-                  |> Enum.into(result.upserted_ids)
-          else
-            ids = result.upserted_ids
-          end
+          ids =
+            if replace.upserted_id do
+              Map.put(result.upserted_ids, ix, replace.upserted_id)
+              |> Enum.into(result.upserted_ids)
+            else
+              result.upserted_ids
+            end
 
           result =
             %{result | matched_count: result.matched_count + replace.matched_count,

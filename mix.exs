@@ -3,14 +3,14 @@ defmodule Mongodb.Mixfile do
 
   def project do
     [app: :mongodb,
-     version: "0.1.0",
+     version: "0.1.2-dev",
      elixir: "~> 1.0",
      deps: deps,
      name: "Mongodb",
      source_url: "https://github.com/ericmj/mongodb",
      docs: fn ->
        {ref, 0} = System.cmd("git", ["rev-parse", "--verify", "--quiet", "HEAD"])
-       [source_ref: ref, main: "README", readme: "README.md"]
+       [source_ref: ref, main: "extra-readme", extras: ["README.md"]]
      end,
      description: description,
      package: package]
@@ -24,10 +24,10 @@ defmodule Mongodb.Mixfile do
 
   defp deps do
     [{:connection, "~> 1.0"},
-     {:poolboy, "~> 1.5", optional: true},
-     {:ex_doc, only: :docs},
-     {:earmark, only: :docs},
-     {:inch_ex, only: :docs}]
+     {:poolboy,    "~> 1.5", optional: true},
+     {:ex_doc,     ">= 0.0.0", only: :docs},
+     {:earmark,    ">= 0.0.0", only: :docs},
+     {:inch_ex,    ">= 0.0.0", only: :docs}]
   end
 
   defp description do
@@ -35,7 +35,7 @@ defmodule Mongodb.Mixfile do
   end
 
   defp package do
-    [contributors: ["Eric Meadows-Jönsson"],
+    [maintainers: ["Eric Meadows-Jönsson"],
      licenses: ["Apache 2.0"],
      links: %{"Github" => "https://github.com/ericmj/mongodb"}]
   end
