@@ -18,6 +18,8 @@ defmodule Mongo.Connection do
   @find_one_flags ~w(slave_ok exhaust partial)a
   @find_flags ~w(tailable_cursor slave_ok no_cursor_timeout await_data exhaust allow_partial_results)a
   @update_flags ~w(upsert multi)a
+  
+  @timeout 15000
 
   @doc """
   Starts the connection process.
@@ -56,7 +58,7 @@ defmodule Mongo.Connection do
 
   @doc false
   def find(conn, coll, query, select, opts \\ []) do
-    GenServer.call(conn, {:find, coll, query, select, opts})
+    GenServer.call(conn, {:find, coll, query, select, opts}, @timeout)
   end
 
   @doc false
@@ -77,7 +79,7 @@ defmodule Mongo.Connection do
   @doc false
   def insert(conn, coll, docs, opts \\ []) do
     {ids, docs} = assign_ids(docs)
-    case GenServer.call(conn, {:insert, coll, docs, opts}) do
+    case GenServer.call(conn, {:insert, coll, docs, opts}, @timeout) do
       {:ok, result} -> {:ok, %{result | inserted_ids: ids}}
       other -> other
     end
