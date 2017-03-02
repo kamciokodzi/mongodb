@@ -63,7 +63,7 @@ defmodule Mongo.Connection do
 
   @doc false
   def get_more(conn, coll, cursor_id, opts \\ []) do
-    GenServer.call(conn, {:get_more, coll, cursor_id, opts})
+    GenServer.call(conn, {:get_more, coll, cursor_id, opts}, @timeout)
   end
 
   @doc false
