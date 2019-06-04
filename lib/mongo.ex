@@ -176,6 +176,8 @@ defmodule Mongo do
 
     opts = unless Keyword.get(opts, :cursor_timeout, true) do
       [{:no_cursor_timeout, true} | opts]
+    else
+      opts
     end
 
     drop = ~w(comment max_time modifiers sort cursor_type projection cursor_timeout)a
