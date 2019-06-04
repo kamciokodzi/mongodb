@@ -71,11 +71,11 @@ defmodule Mongo do
 
     cursor? = pool.version >= 1 and Keyword.get(opts, :use_cursor, true)
 
-    if cursor? do
+    query = if cursor? do
       cursor = %{
         batchSize: opts[:batch_size]
       }
-      query = query ++ [cursor: filter_nils(cursor)]
+      query ++ [cursor: filter_nils(cursor)]
     end
 
     opts = Keyword.drop(opts, ~w(allow_disk_use max_time use_cursor)a)
@@ -162,20 +162,20 @@ defmodule Mongo do
 
     query = filter_nils(query)
 
-    if query == [] do
-      query = filter
+    query = if query == [] do
+      filter
     else
       filter = normalize_doc(filter)
-      unless List.keymember?(filter, "$query", 0) do
-        filter = [{"$query", filter}]
+      filter = unless List.keymember?(filter, "$query", 0) do
+        [{"$query", filter}]
       end
-      query = filter ++ query
+      filter ++ query
     end
 
     select = opts[:projection]
 
-    unless Keyword.get(opts, :cursor_timeout, true) do
-      opts = [{:no_cursor_timeout, true} | opts]
+    opts = unless Keyword.get(opts, :cursor_timeout, true) do
+      [{:no_cursor_timeout, true} | opts]
     end
 
     drop = ~w(comment max_time modifiers sort cursor_type projection cursor_timeout)a
@@ -347,7 +347,7 @@ defmodule Mongo do
   Uses MongoDB update operators to specify the updates. For more information
   please refer to the
   [MongoDB documentation](http://docs.mongodb.org/manual/reference/operator/update/)
-  
+
   Example:
 
       Mongo.update_one(MongoPool,
